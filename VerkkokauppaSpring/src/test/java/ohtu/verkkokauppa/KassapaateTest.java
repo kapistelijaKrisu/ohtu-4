@@ -52,7 +52,7 @@ public class KassapaateTest {
         // sitten suoritetaan varmistus, että pankin metodia tilisiirto on kutsuttu
         verify(pankki).tilisiirto("pekka", 42, "12345", "33333-44455", 5);
     }
-    
+
     @Test
     public void kakkonen() {
         when(viite.uusi()).thenReturn(22);
@@ -71,7 +71,7 @@ public class KassapaateTest {
         // sitten suoritetaan varmistus, että pankin metodia tilisiirto on kutsuttu
         verify(pankki).tilisiirto("pekka", 22, "1", "33333-44455", 55);
     }
-    
+
     @Test
     public void kolmonen() {
         when(viite.uusi()).thenReturn(22);
@@ -88,7 +88,7 @@ public class KassapaateTest {
         // sitten suoritetaan varmistus, että pankin metodia tilisiirto on kutsuttu
         verify(pankki).tilisiirto("pekka", 22, "1", "33333-44455", 10);
     }
-    
+
     @Test
     public void nelonen() {
         when(viite.uusi()).thenReturn(22);
@@ -107,7 +107,7 @@ public class KassapaateTest {
         // sitten suoritetaan varmistus, että pankin metodia tilisiirto on kutsuttu
         verify(pankki).tilisiirto("pekka", 22, "1", "33333-44455", 5);
     }
-    
+
     @Test
     public void vitone() {
         // määritellään että tuote numero 1 on maito jonka hinta on 5 ja saldo 10
@@ -121,14 +121,14 @@ public class KassapaateTest {
         k.lisaaKoriin(1);// ostetaan tuotetta numero 1 eli maitoa
         k.tilimaksu("pekka", "1");
         verify(pankki).tilisiirto(anyString(), anyInt(), anyString(), anyString(), eq(10));
-        
+
         k.aloitaAsiointi();
         k.lisaaKoriin(1);    // ostetaan tuotetta numero 1 eli maitoa
         k.tilimaksu("pekka", "1");
         verify(pankki).tilisiirto(anyString(), anyInt(), anyString(), anyString(), eq(5));
-        
+
     }
-    
+
     @Test
     public void kutone() {
         when(viite.uusi()).
@@ -146,17 +146,43 @@ public class KassapaateTest {
         k.tilimaksu("pekka", "1");
         verify(viite, times(1)).uusi();
         verify(pankki).tilisiirto(anyString(), eq(1), anyString(), anyString(), anyInt());
- 
+
         k.aloitaAsiointi();
         k.lisaaKoriin(1);    // ostetaan tuotetta numero 1 eli maitoa
         k.tilimaksu("pekka", "1");
         verify(viite, times(2)).uusi();
         verify(pankki).tilisiirto(anyString(), eq(2), anyString(), anyString(), anyInt());
-        
+
         k.aloitaAsiointi();
         k.lisaaKoriin(1);    // ostetaan tuotetta numero 1 eli maitoa
         k.tilimaksu("pekka", "1");
         verify(viite, times(3)).uusi();
         verify(pankki).tilisiirto(anyString(), eq(3), anyString(), anyString(), anyInt());
+    }
+
+    @Test
+    public void seiska() {
+        // määritellään että tuote numero 1 on maito jonka hinta on 5 ja saldo 10
+        when(varasto.saldo(1)).thenReturn(10);
+        when(varasto.haeTuote(1)).thenReturn(new Tuote(1, "maito", 5));
+        // sitten testattava kauppa 
+
+        // tehdään ostokset
+        k.aloitaAsiointi();
+        k.lisaaKoriin(1);    // ostetaan tuotetta numero 1 eli maitoa
+        k.poistaKorista(1);
+        verify(varasto, times(2)).palautaVarastoon(varasto.haeTuote(1));
+        k.tilimaksu("pekka", "1");
+        verify(pankki).tilisiirto(anyString(), anyInt(), anyString(), anyString(), eq(0));
+
+        //varasto.palautaVarastoon(t);
+        //ostoskori.poista(t);
+        k.lisaaKoriin(1);    // ostetaan tuotetta numero 1 eli maitoa
+        k.lisaaKoriin(1);    // ostetaan tuotetta numero 1 eli maitoa
+        k.poistaKorista(1);
+        verify(varasto, times(5)).palautaVarastoon(varasto.haeTuote(1));
+        k.tilimaksu("pekka", "1");
+        verify(pankki).tilisiirto(anyString(), anyInt(), anyString(), anyString(), eq(5));
+
     }
 }
